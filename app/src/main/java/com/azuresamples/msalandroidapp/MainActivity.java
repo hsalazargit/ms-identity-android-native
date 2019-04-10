@@ -146,7 +146,10 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "Starting volley request to graph");
 
         /* Make sure we have a token to send to graph */
-        if (authResult.getAccessToken() == null) {return;}
+        if (authResult.getAccessToken() == null) {
+
+            return;
+        }
 
         RequestQueue queue = Volley.newRequestQueue(this);
         JSONObject parameters = new JSONObject();
@@ -212,6 +215,13 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.graphData).setVisibility(View.VISIBLE);
     }
 
+    private void updateFailedUI(String msg) {
+        callGraphButton.setVisibility(View.VISIBLE);
+        findViewById(R.id.graphData).setVisibility(View.VISIBLE);
+        TextView graphText = (TextView) findViewById(R.id.graphData);
+        graphText.setText(msg);
+    }
+
     /* Set the UI for signed out account */
     private void updateSignedOutUI() {
         callGraphButton.setVisibility(View.VISIBLE);
@@ -261,10 +271,13 @@ public class MainActivity extends AppCompatActivity {
 
                 if (exception instanceof MsalClientException) {
                     /* Exception inside MSAL, more info inside MsalError.java */
+                    updateFailedUI("Silent - MSAL Client Exception: " + exception.getMessage());
                 } else if (exception instanceof MsalServiceException) {
                     /* Exception when communicating with the STS, likely config issue */
+                    updateFailedUI("Silent - MSAL Service Exception: " + exception.getMessage());
                 } else if (exception instanceof MsalUiRequiredException) {
                     /* Tokens expired or no session, retry with interactive */
+                    updateFailedUI("Silent - MSAL UIRequired Exception: " + exception.getMessage());
                 }
             }
 
@@ -284,8 +297,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onSuccess(AuthenticationResult authenticationResult) {
                 /* Successfully got a token, call graph now */
-                Log.d(TAG, "Successfully authenticated");
-                Log.d(TAG, "ID Token: " + authenticationResult.getIdToken());
+                Log.i(TAG, "Successfully authenticated");
+                Log.i(TAG, "ID Token: " + authenticationResult.getIdToken());
 
                 /* Store the auth result */
                 authResult = authenticationResult;
@@ -304,8 +317,10 @@ public class MainActivity extends AppCompatActivity {
 
                 if (exception instanceof MsalClientException) {
                     /* Exception inside MSAL, more info inside MsalError.java */
+                    updateFailedUI("MSAL Client Exception: " + exception.getMessage());
                 } else if (exception instanceof MsalServiceException) {
                     /* Exception when communicating with the STS, likely config issue */
+                    updateFailedUI("MSAL Service Exception: " + exception.getMessage());
                 }
             }
 
